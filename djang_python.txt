@@ -1,0 +1,779 @@
+Managing requirements for different versions
+isolated self contained environment
+easy to manage
+
+project structure
+-----------------
+manage.py
+A command line utility for interacting with the Django project
+It is used for task such as development servers,creating database tables and more
+
+below files contains the project configurations
+setting.py
+contains settings for the Django project  such as db configuration,
+timezone, installed apps and more
+
+urls.py
+specifies the url patterns for the project
+it routes incoming rquest to the appropriate views
+
+wsgi.py
+Stands for web server gateway interface. 
+it is used to deploy the django application to production servers
+
+asgi.py
+stands for asynchronous server gateway interface.
+it is used for handling asynchronous features in Django, such as Django channels 
+
+django projects
+A project in Django is collection of apps and configuration files
+An app is a web application that is designed to do a specific thing
+In ecommerce projects apps like orders ,authentication, payments and carts
+
+creating app command
+python manage.py startapp app
+
+structure of apps
+__init__.py 
+- it is a empty file 
+- not allowed to modified
+- it indicates that current package is python package
+
+models.py
+- defines the structure of the db and how data is stored
+- defines the attributes relationships etc
+
+admin.py
+to register the django model in admin panel 
+
+views.py
+views are needed for django application
+all views are in the form of classes
+
+tests.py
+to write the test cases
+
+working of Django
+Django is MVT based framework
+Model , view and template
+model - is the ogical data structure behind the entire application
+view - contains the business logic - request and responses
+template - to represent the htm pages on the web browser
+
+important commands
+start django server
+python manage.py runserver
+
+start django server at particular port number
+python manage.py runserver port_number
+
+create new project
+django-admin startproject jobapp
+
+create a new project in same directory
+django-admin startproject jobapp .
+
+create a new app
+python manage.py startapp app
+
+Reverse resoluction of URLs and URL names
+
+Accessing other URLs in an application
+it is not to hardcode the urls in source code
+do the reverse resoluction of the urls 
+
+reverse(url_name,arguments)
+url_name: is nothing but a unique identifier that you are allowed to give your urls in urls.py
+arguments: arguments that this function might need.
+
+urls.py
+urlpatterns = [
+	path('product-list', views.product_list, name='product-list')
+]
+
+<domain-name>/product-list  --------> reverse('product-list')
+
+urlpatterns = [
+	path('product/<int:id>', views.product_detail, name='product-detail')
+]
+
+<domain-name>/product-detail/{id}  --------> reverse('product-detail',args=(1,))
+
+
+what are tags?
+it is a piece of code(logic) in django template language
+syntax - {% %}
+
+logic can be defined using 
+if... else statements
+loops
+import tag
+extends tags
+block tag
+
+if condn in templates
+syntax {% if condition %}
+# render if body
+{% endif %}
+
+loops in templates
+{% for odd in odds %}
+# logic here
+{% endfor %}
+
+comments in templates
+{% comment %}
+comment add here
+{% endcomment %}
+
+{% comment 'first_comment'%}
+comment add here
+{% endcomment %}
+
+url tag
+{% url 'url-name' %}
+
+working with databases
+defining django models
+
+from django.db import models
+class Customer(models.Model):
+	first_name = models.CharField(max_length=50)
+	last_name =models.CharField(max_length=50)
+
+commands for migrations
+makemigrations -> for creating new migrations based on the changes that are identified in the models
+
+sqlmigrate -> displays the sql statements for a migrations
+
+migrate -> for running , applying and unapplying migrations
+
+showmigrations -> list the migrations along with their status
+
+inserting and fetching records from databases in the python shell
+>python manage.py shell
+>jobpost = JobPost(title="first job",description="first job description",salary=5000)
+>jobpost.save()
+
+fetching
+>JobPost.objects.all()
+
+getting single record
+JobPost.objects.get(description="Example")
+SQL translation: select * from JobPost where description = "Example"
+
+filtering
+JobPost.objects.filter(salary=1000)
+
+exclude
+JobPost.objects.exclude(salary=10000)
+
+limiting query sets
+JobPost.objects.filter()[1:2]
+JobPost.objects.filter()[0:3:2]
+
+sorting
+JobPost.objects.order_by("-title")
+JobPost.objects.order_by("-title")[0]
+
+JobPost.objects.order_by("?")
+	- to get the random order
+
+JobPost.objects.order_by("title")
+	- order by title in ascending
+
+JobPost.objects.order_by("-title")
+	- order by title in descending
+
+JobPost.objects.order_by("title","-description")
+	- order by title in ascending and description descending
+
+fieldlookups
+JobPost.objects.filter(salary__gt=1000)
+JobPost.objects.filter(salary__gte=1000)
+JobPost.objects.filter(salary__exact=1000)
+JobPost.objects.filter(title__iexact="mounesh")
+//i means ignore case
+
+updating records
+get the entity and modify and call save method
+
+chaining querysets
+JobPost.objects.filter().exclude(salary=4000)
+JobPost.objects.filter().exclude(salary=4000).filter(title__contains="test")
+
+aggregations
+from django.db.models import Avg
+JobPost.objects.aggregate(Avg("salary"))
+JobPost.objects.filter(id_lte=3).aggregate(Avg("salary"))
+
+from django.db.models import Max
+JobPost.objects.aggregate(Max("salary"))
+JobPost.objects.aggregate(calculated_salary= Max("salary") - Avg("salary"))
+
+deleting records
+JobPost.objects.get(title="Test").delete()
+all_jobs=JobPost.objects.all()
+all_jobs.delete()
+
+all_jobs_test = JobPost.objects.filter(title__icontains="test")
+all_jobs_test.delete()
+
+to create the super user
+$python manage.py createsuperuser
+
+to register the model in admin panel
+in the admin.py file
+admin.site.register(JobPost)
+
+customizing the admin panel
+customizing list page
+change the way records are displayed
+better control over filters
+customize the options that are displayed in actions menu
+
+customizing detail page
+customize and have control on what is being displayed
+when working with multiple models, admin interface allows you to show related records along inline right in the form
+
+
+
+one to one mapping
+create the relationship in code
+-------------------------------
+class Location(models.Model):
+    street=models.CharField(max_length=200)
+    city=models.CharField(max_length=200)
+    state=models.CharField(max_length=200)
+    country=models.CharField(max_length=200)
+    zip=models.CharField(max_length=200)
+
+class JobPost(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.CharField(max_length=200)
+    date = models.DateTimeField(auto_now=False, auto_now_add=True)
+    expiry = models.DateField(null=True) 
+    salary = models.IntegerField()
+    slug = models.SlugField(null=True, max_length=40, unique=True)
+    location = models.OneToOneField(Location,on_delete=models.CASCADE, null=True)
+
+
+in the shell 
+------------
+(env) PS C:\Users\Mounesh\Desktop\Django\jobapp> python manage.py migrate
+Operations to perform:
+  Apply all migrations: admin, app, auth, contenttypes, sessions
+Running migrations:
+  Applying app.0006_location_jobpost_location... OK
+(env) PS C:\Users\Mounesh\Desktop\Django\jobapp> python manage.py shell
+Python 3.12.1 (tags/v3.12.1:2305ca5, Dec  7 2023, 22:03:25) [MSC v.1937 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+(InteractiveConsole)>>> from app.models import JobPost, Location
+>>> l1 = Location(street="Shasthri circle", city="Kundapura", state="Karnataka",country="India","576247") 
+  File "<console>", line 1
+    l1 = Location(street="Shasthri circle", city="Kundapura", state="Karnataka",country="India","576247")
+                                                                                               
+         ^
+SyntaxError: positional argument follows keyword argument
+>>> l1 = Location(street="Shasthri circle", city="Kundapura", state="Karnataka",country="India",ip="576247") 
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\base.py", line 567, in __init__
+    raise TypeError(
+TypeError: Location() got unexpected keyword arguments: 'ip'
+>>> l1 = Location(street="Shasthri circle", city="Kundapura", state="Karnataka",country="India",zip="576247") 
+>>> Location.save(l1) 
+>>> l2 = Location(street="Karavalli", city="Udupi", state="Karnataka",country="India","576257")               
+  File "<console>", line 1
+    l2 = Location(street="Karavalli", city="Udupi", state="Karnataka",country="India","576257")
+                                                                                              ^
+SyntaxError: positional argument follows keyword argument
+>>> l2 = Location(street="Karavalli", city="Udupi", state="Karnataka",country="India",zip="576257") 
+>>> Location.save(l2);
+>>> JobPost.objects.get()
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\query.py", line 650, in get
+    raise self.model.MultipleObjectsReturned(
+app.models.JobPost.MultipleObjectsReturned: get() returned more than one JobPost -- it returned 5!
+>>> JobPost.objects.all()
+<QuerySet [<JobPost: first job with salary 5000>, <JobPost: second job with salary 6000>, <JobPost: third job with salary 7000>, <JobPost: Fourth job post with salary 7999>, <JobPost: sixth job post with salary 7777>]>
+    return super(JobPost,self).save(*args,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: super(type, obj): obj must be an instance or subtype of type
+>>> l1          
+<Location: Location object (1)>
+>>> j1
+<JobPost: first job with salary 5000>
+>>> j1.location = l1
+>>> JobPost.save(j1) 
+>>> l2
+<Location: Location object (2)>
+>>> j2  = JobPost.objects.all()[1] 
+>>> j2
+<JobPost: second job with salary 6000>
+>>> j2.location = l2
+>>> JobPost.save(j2) 
+>>> JobPost.objects.all()[0].location
+<Location: Location object (1)>
+>>> JobPost.objects.all()[0].location.street
+'Shasthri circle'
+
+many to one relationship
+-----------------------
+class Author(models.Model):
+    name=models.CharField(max_length=200)
+    company=models.CharField(max_length=200)
+    designation=models.CharField(max_length=200)
+
+class Location(models.Model):
+    street=models.CharField(max_length=200)
+    city=models.CharField(max_length=200)
+    state=models.CharField(max_length=200)
+    country=models.CharField(max_length=200)
+    zip=models.CharField(max_length=200)
+
+class JobPost(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.CharField(max_length=200)
+    date = models.DateTimeField(auto_now=False, auto_now_add=True)
+    expiry = models.DateField(null=True) 
+    salary = models.IntegerField()
+    slug = models.SlugField(null=True, max_length=40, unique=True)
+    location = models.OneToOneField(Location,on_delete=models.CASCADE, null=True)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, null=True)
+
+queries
+-------
+(env) PS C:\Users\Mounesh\Desktop\Django\jobapp> python manage.py migrate
+Operations to perform:
+  Apply all migrations: admin, app, auth, contenttypes, sessions
+Running migrations:
+  Applying app.0007_author_jobpost_author... OK
+(env) PS C:\Users\Mounesh\Desktop\Django\jobapp> python manage.py shell
+Python 3.12.1 (tags/v3.12.1:2305ca5, Dec  7 2023, 22:03:25) [MSC v.1937 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+(InteractiveConsole)
+>>> fromapp.models import JobPost,Author,Location
+  File "<console>", line 1
+    fromapp.models import JobPost,Author,Location
+                   ^^^^^^
+SyntaxError: invalid syntax
+>>> from app.models import JobPost,Author,Location 
+>>> author1 = Author(name="Chennu",company="legato",designation="Hiring Manager") 
+>>> author1.save()
+>>> author2 = Author(name="Manoj",company="IBM",designation="Human Resource Manager")  
+>>> auhtor2.save()
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+NameError: name 'auhtor2' is not defined. Did you mean: 'author2'?
+>>> author2.save() 
+>>> JobPost.objects.all().count()
+5
+>>> JobPost.objects.all()[4] 
+<JobPost: sixth job post with salary 7777>
+>>> JobPost.objects.all()[4].title='fifth job post' 
+>>> j = JobPost.objects.all()[4]                   
+>>> j.title='fifth job post' 
+>>> j.save()
+>>> j = JobPost.objects.all()[4]
+>>> JobPost.objects.all()[4]     
+<JobPost: fifth job post with salary 7777>
+>>> j.description= 'fifth job post description' 
+>>> j.slug='fifth-job-post' 
+>>> j.save()
+>>> j = JobPost(title='sixth job post',description='sixth job post example',salary=13500,author=author1) 
+>>> j.save()
+>>> j= JobPost.objects().all()[4] 
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+TypeError: 'Manager' object is not callable
+>>> j= JobPost.objects().all()    
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+TypeError: 'Manager' object is not callable
+>>> x= JobPost.objects.all()
+>>> x 
+<QuerySet [<JobPost: first job with salary 5000>, <JobPost: second job with salary 6000>, <JobPost: third job with salary 7000>, <JobPost: Fourth job post with salary 7999>, <JobPost: fifth job post with salary 7777>, <JobPost: sixth job post with salary 13500>]>
+>>> x= JobPost.objects.all()[4] 
+>>> x
+<JobPost: fifth job post with salary 7777>
+>>> x= JobPost.objects.all()[3] 
+>>> x
+<JobPost: Fourth job post with salary 7999>
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\base.py", line 1132, in _prepare_related_fields_for_save
+    raise ValueError(
+ValueError: save() prohibited to prevent data loss due to unsaved related object 'author'.     
+>>> author3.save()
+>>> j5.save()
+>>> author1.JobPost_set.all
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+AttributeError: 'Author' object has no attribute 'JobPost_set'. Did you mean: 'jobpost_set'?
+>>> author1.JobPost_set.all()Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+AttributeError: 'Author' object has no attribute 'JobPost_set'. Did you mean: 'jobpost_set'?>>> author1.jobpost_set()    
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+TypeError: create_reverse_many_to_one_manager.<locals>.RelatedManager.__call__() missing 1 required keyword-only argument: 'manager'
+>>> author1.jobpost__set() 
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+AttributeError: 'Author' object has no attribute 'jobpost__set'. Did you mean: 'jobpost_set'?  
+>>> author1.jobpost_set()  
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+TypeError: create_reverse_many_to_one_manager.<locals>.RelatedManager.__call__() missing 1 required keyword-only argument: 'manager'
+>>> author1
+<Author: Author object (1)>
+>>> author1.name
+'Chennu'
+>>> author1.jobpost_set.all()
+<QuerySet [<JobPost: Fourth job post with salary 7999>, <JobPost: sixth job post with salary 13500>]>
+>>> Author.objects.get(name__contains='chennu')jobpost_set.all()
+  File "<console>", line 1
+    Author.objects.get(name__contains='chennu')jobpost_set.all()
+                                               ^^^^^^^^^^^
+SyntaxError: invalid syntax
+>>> Author.objects.get(name__contains='chennu').jobpost_set.all() 
+<QuerySet [<JobPost: Fourth job post with salary 7999>, <JobPost: sixth job post with salary 13500>]>
+>>> jp7 = author1.jobpost_set.create(title='seventh job post',description='seventh job post description',salary=7890) 
+>>> jp7
+<JobPost: seventh job post with salary 7890>
+>>> jp1 = JobPost.objects.get(title__contains='first')
+>>> jp1
+<JobPost: first job with salary 5000>
+>>> author1.jobpost_set.add(jp1)
+>>> author1.jobpost_set.count()
+4
+>>> author1.jobpost_set.all()
+<QuerySet [<JobPost: first job with salary 5000>, <JobPost: Fourth job post with salary 7999>, <JobPost: sixth job post with salary 13500>, <JobPost: seventh job post with salary 7890>]>    
+>>> author1.jobpost_set.filter(title__contains='first')
+<QuerySet [<JobPost: first job with salary 5000>]>
+>>> JobPost.objects.filter(author__name='chennu') 
+<QuerySet []>
+>>> JobPost.objects.filter(author__iname='chennu') 
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\query.py", line 1476, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\query.py", line 1494, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\query.py", line 1501, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1600, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1632, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1546, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1370, in build_lookup
+    lhs = self.try_transform(lhs, lookup_name)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1414, in try_transform
+    raise FieldError(
+django.core.exceptions.FieldError: Unsupported lookup 'iname' for ForeignKey or join on the field not permitted.
+>>> JobPost.objects.filter(author__name='Chennu')  
+<QuerySet [<JobPost: first job with salary 5000>, <JobPost: Fourth job post with salary 7999>, <JobPost: sixth job post with salary 13500>, <JobPost: seventh job post with salary 7890>]>    
+>>> JobPost.objects.filter(author__contains='ennu') 
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\query.py", line 1476, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\query.py", line 1494, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\query.py", line 1501, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1600, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1632, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1546, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1370, in build_lookup
+    lhs = self.try_transform(lhs, lookup_name)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1414, in try_transform
+    raise FieldError(
+django.core.exceptions.FieldError: Unsupported lookup 'contains' for ForeignKey or join on the field not permitted.
+>>> JobPost.objects.filter(author__contains='chennu') 
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\query.py", line 1476, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\query.py", line 1494, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\query.py", line 1501, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1600, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1632, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1546, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1370, in build_lookup
+    lhs = self.try_transform(lhs, lookup_name)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1414, in try_transform
+    raise FieldError(
+django.core.exceptions.FieldError: Unsupported lookup 'contains' for ForeignKey or join on the field not permitted.
+>>> JobPost.objects.filter(author__contains='Chennu') 
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\query.py", line 1476, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\query.py", line 1494, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\query.py", line 1501, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1600, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1632, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1546, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1370, in build_lookup
+    lhs = self.try_transform(lhs, lookup_name)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1414, in try_transform
+    raise FieldError(
+django.core.exceptions.FieldError: Unsupported lookup 'contains' for ForeignKey or join on the field not permitted.
+>>> JobPost.objects.filter(author__name__icontains='Chennu') 
+<QuerySet [<JobPost: first job with salary 5000>, <JobPost: Fourth job post with salary 7999>, <JobPost: sixth job post with salary 13500>, <JobPost: seventh job post with salary 7890>]>    
+>>> JobPost.objects.filter(author__name__icontains='hennu')  
+<QuerySet [<JobPost: first job with salary 5000>, <JobPost: Fourth job post with salary 7999>, <JobPost: sixth job post with salary 13500>, <JobPost: seventh job post with salary 7890>]>    
+>>> JobPost.objects.filter(author__name__icontains='chennu', designation__contains='manager') 
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\query.py", line 1476, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\query.py", line 1494, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\query.py", line 1501, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1600, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1632, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1482, in build_filter
+    lookups, parts, reffed_expression = self.solve_lookup_type(arg, summarize)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1294, in solve_lookup_type
+    _, field, _, lookup_parts = self.names_to_path(lookup_splitted, self.get_meta())
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\sql\query.py", line 1759, in names_to_path
+    raise FieldError(
+django.core.exceptions.FieldError: Cannot resolve keyword 'designation' into field. Choices are: author, author_id, date, description, expiry, id, location, location_id, salary, slug, title 
+>>> JobPost.objects.filter(author__name__icontains='chennu', author__designation__contains='manager') 
+<QuerySet [<JobPost: first job with salary 5000>, <JobPost: Fourth job post with salary 7999>, <JobPost: sixth job post with salary 13500>, <JobPost: seventh job post with salary 7890>]>    
+>>> JobPost.objects.filter(author__id=1)                                                       <QuerySet [<JobPost: first job with salary 5000>, <JobPost: Fourth job post with salary 7999>, <JobPost: sixth job post with salary 13500>, <JobPost: seventh job post with salary 7890>]>    
+>>> JobPost.objects.filter(author__pk=1) 
+<QuerySet [<JobPost: first job with salary 5000>, <JobPost: Fourth job post with salary 7999>, <JobPost: sixth job post with salary 13500>, <JobPost: seventh job post with salary 7890>]>    
+>>> JobPost.objects.filter(author=author1) 
+<QuerySet [<JobPost: first job with salary 5000>, <JobPost: Fourth job post with salary 7999>, <JobPost: sixth job post with salary 13500>, <JobPost: seventh job post with salary 7890>]>    
+>>> JobPost.objects.filter(author__in[1,2]) 
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+NameError: name 'author__in' is not defined
+>>> JobPost.objects.filter(author__in=[1,2]) 
+<QuerySet [<JobPost: first job with salary 5000>, <JobPost: Fourth job post with salary 7999>, <JobPost: sixth job post with salary 13500>, <JobPost: seventh job post with salary 7890>]>    
+>>>
+
+
+many to many relationship
+-------------------------
+class Skills(models.Model):
+    name=models.CharField(max_length=200)
+
+class JobPost(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.CharField(max_length=200)
+    date = models.DateTimeField(auto_now=False, auto_now_add=True)
+    expiry = models.DateField(null=True) 
+    salary = models.IntegerField()
+    slug = models.SlugField(null=True, max_length=40, unique=True)
+    location = models.OneToOneField(Location,on_delete=models.CASCADE, null=True)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, null=True)
+    skills=models.ManyToManyField(Skills)
+
+
+many to many relationship queries
+---------------------------------
+(env) PS C:\Users\Mounesh\Desktop\Django\jobapp> python manage.py shell
+Python 3.12.1 (tags/v3.12.1:2305ca5, Dec  7 2023, 22:03:25) [MSC v.1937 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+(InteractiveConsole)
+>>> from app.models JobPost,Author,Location,Skills
+  File "<console>", line 1
+    from app.models JobPost,Author,Location,Skills
+                    ^^^^^^^
+SyntaxError: invalid syntax
+>>> from app.models from JobPost,Author,Location,Skills 
+  File "<console>", line 1
+    from app.models from JobPost,Author,Location,Skills
+                    ^^^^
+SyntaxError: invalid syntax
+>>> from app.models import JobPost,Author,Location,Skills 
+>>> jp8 = JobPost(title="eighth job post", description="eighth job post description",salary=110
+00
+... )
+>>> jp8
+<JobPost: eighth job post with salary 11000>
+>>> skill1 =Skills(name="writing ") 
+>>> skill1.save()
+>>> jp8.save()
+>>> jp8.skills.add(skill1) 
+>>> skill1 =Skills(name="reading ") 
+>>> skill1.save()
+>>> jp8.skills.add(skill1)
+>>> jp8.skills.create(name="coding")
+<Skills: Skills object (3)>
+>>> JobPost.objects.get(title='seventh') 
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\query.py", line 647, in get
+    raise self.model.DoesNotExist(
+app.models.JobPost.DoesNotExist: JobPost matching query does not exist.
+>>> JobPost.objects.get(title__contains='seve')    
+<JobPost: seventh job post with salary 7890>
+>>> jp7 = JobPost.objects.get(title__contains='seve')
+>>> skill1
+<Skills: Skills object (2)>
+>>> skill1
+<Skills: Skills object (2)>
+>>> skill1.objects.get(
+... skill1.objects.all()
+...
+KeyboardInterrupt
+>>> skill1.objects.all()
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\manager.py", line 186, in __get__
+    raise AttributeError(
+AttributeError: Manager isn't accessible via Skills instances
+>>> Skills.objects.all()
+<QuerySet [<Skills: Skills object (1)>, <Skills: Skills object (2)>, <Skills: Skills object (3)>]>
+>>> Skills.objects.get(name='reading')
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\query.py", line 647, in get
+    raise self.model.DoesNotExist(
+app.models.Skills.DoesNotExist: Skills matching query does not exist.
+>>> Skills.objects.get(name="reading") 
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Mounesh\desktop\Django\jobapp\env\Lib\site-packages\django\db\models\query.py", line 647, in get
+    raise self.model.DoesNotExist(
+app.models.Skills.DoesNotExist: Skills matching query does not exist.
+>>> Skills.objects.get(pk=2)           
+<Skills: Skills object (2)>
+>>> skill2 = Skills.objects.get(pk=2) 
+>>> skill2.jobpost_set(jp7)
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+TypeError: create_forward_many_to_many_manager.<locals>.ManyRelatedManager.__call__() takes 1 positional argument but 2 were given
+>>> skill2.jobpost_set.add(jp7)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
